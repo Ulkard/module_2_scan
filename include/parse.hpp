@@ -2,7 +2,9 @@
 
 #include <charconv>
 #include <concepts>
+#include <cstdint>
 #include <optional>
+#include <string>
 #include <system_error>
 
 #include "format_string.hpp"
@@ -11,8 +13,6 @@
 namespace stdx::details {
 
 // Шаблонная функция, возвращающая пару позиций в строке с исходными данными, соотвествующих I-ому плейсхолдеру
-// Функция закомментирована, так как еще не реализованы классы, которые она использует
-/*
 template<int I, format_string fmt, fixed_string source>
 consteval auto get_current_source_for_parsing() {
     static_assert(I >= 0 && I < fmt.number_placeholders, "Invalid placeholder index");
@@ -64,15 +64,46 @@ consteval auto get_current_source_for_parsing() {
     }();
     return std::pair{src_start, src_end};
 }
-*/
 
-// Реализуйте семейство функция parse_value
+
+template <typename T, typename... Types>
+concept IsTypeOnOf = (std::same_as<T, Types> || ...);
+
+// Реализуйте семейство функций parse_value
+template<fixed_string str, char format_spec, typename ParsingT>
+requires IsTypeOnOf<ParsingT, int8_t, int16_t, int32_t, int64_t, const int8_t, const int16_t, const int32_t, const int64_t>
+    && (format_spec == 'd' || format_spec == char{})
+consteval ParsingT parse_value() {
+    return std::stoi(str);
+}
+
+template<fixed_string str, char format_spec, typename ParsingT>
+requires IsTypeOnOf<ParsingT, uint8_t, uint16_t, uint32_t, uint64_t, const uint8_t, const uint16_t, const uint32_t, const uint64_t>
+    && (format_spec == 'u' || format_spec == char{})
+consteval ParsingT parse_value() {
+    return std::stoul(str);
+}
+
+template<fixed_string str, char format_spec, typename ParsingT>
+requires IsTypeOnOf<ParsingT, std::string_view, const std::string_view>
+    && (format_spec == 's' || format_spec == char{})
+consteval ParsingT parse_value() {
+    return str;
+}
+
+template<fixed_string str, char format_spec, typename ParsingT>
+consteval ParsingT parse_value() {
+    // emit error somehow
+    // parse_error("parsing type mismatch format specifier")
+    return {};
+}
 
 // Шаблонная функция, выполняющая преобразования исходных данных в конкретный тип на основе I-го плейсхолдера
-
-// здесь ваш код
-void parse_input() {  // поменяйте сигнатуру
-    // здесь ваш код
+template<int I, format_string fmt, fixed_string source, typename ParsingT>
+consteval ParsingT parse_input() { 
+    constexpr auto target_idxs = get_current_source_for_parsing<I, fmt, source>();
+    constexpr fixed_string str_to_parse = {target_idxs};
+    return parse_value<str_to_parse, fmt.format_specifiers[I], ParsingT>();
 }
 
 } // namespace stdx::details

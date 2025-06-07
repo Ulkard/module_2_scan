@@ -73,7 +73,6 @@ class format_string {
     }
 
     // Функция для получения позиций плейсхолдеров
-
     template <size_t PhSize>
     static consteval PlaceholderPoses<PhSize> get_placeholder_positions() { 
         constexpr size_t N = str.size();
@@ -91,10 +90,16 @@ class format_string {
                 ++pos;
                 continue;
             }
-        
             // Начало плейсхолдера
             size_t ph_begin = pos;
             ++pos;
+
+            if (str.data[pos] == '%') {
+                ++pos;
+                const char spec = str.data[pos];
+                format_specifiers[current_idx] = spec;
+            }
+        
             while (pos < size) {
                 if (str.data[pos] == '}') {
                     result[current_idx] = {ph_begin, pos};
@@ -107,14 +112,24 @@ class format_string {
         }
 
         static_assert(current_idx == PhSize - 1, "unexpected PhSize");
-
         return result;
     }
+
+    /*template <size_t PhSize>
+    static consteval std::array<char, PhSize> get_format_specifiers() {
+        for (size_t i = 0; i < PhSize; ++i) {
+            if (placeholder_positions[i].right - placeholder_positions[i].left < 2) {
+                continue;
+            }
+
+        }
+    }*/
 
     static fixed_string str;
     static constexpr size_t number_placeholders = [result = get_number_placeholders()](){
         return result.has_value() ? result.value() : 0;
     }();
+    static constexpr std::array<char, number_placeholders> format_specifiers{};
     static constexpr PlaceholderPoses<number_placeholders> placeholder_positions = get_placeholder_positions();
 };
 

@@ -4,6 +4,8 @@
 #include <cstring>
 #include <cstddef>
 #include <iterator>
+#include <tuple>
+#include <utility>
 namespace stdx::details {
 
 // Шаблонный класс, хранящий C-style строку фиксированной длины
@@ -36,6 +38,13 @@ struct parse_error : public fixed_string<40> {};
 // Шаблонный класс для хранения результатов парсинга
 template <typename... Ts>
 struct scan_result {
+    scan_result() = delete;
+
+    scan_result(std::tuple<Ts...>&& other_tuple)
+        : values_(std::forward(other_tuple)) {};
+
+    scan_result(Ts&& ...args)
+        : values_(std::make_tuple(std::forward(args)...)) {};
     std::tuple<Ts...> values() {
         return values_;
     }
