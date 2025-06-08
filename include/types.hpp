@@ -6,6 +6,8 @@
 #include <iterator>
 #include <tuple>
 #include <utility>
+
+
 namespace stdx::details {
 
 // Шаблонный класс, хранящий C-style строку фиксированной длины

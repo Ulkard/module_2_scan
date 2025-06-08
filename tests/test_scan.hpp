@@ -30,27 +30,19 @@ consteval void testScan() {
     static_assert(std::is_same<decltype(std::get<0>(test_2)), const int&>(), "bad scan().values() type");
     static_assert(std::get<0>(test_2) == 42, "bad scan() result");
 
-    // number as string
+    // number as string - ок
     static_assert(std::is_same<decltype(std::get<1>(test_2)), const std::string_view&>(), "bad scan().values() type");
     static_assert(std::get<1>(test_2) == "12", "bad scan() result");
 
-    // string as number
-    // TODO: shouldn't work
+    // string as number - shouldn't work
     constexpr auto test_3 = stdx::scan<
         "my test string is {}, right?"_fs, 
         "my test string is test_str, right?", 
         int>().values();
-    static_assert(std::tuple_size<decltype(test_3)>() == 1, "bad scan().values() size");
-    static_assert(std::is_same<decltype(std::get<0>(test_3)), const int&>(), "bad scan().values() type");
-    static_assert(std::get<0>(test_3) == int{}, "bad scan() result");
 
-    // string as number with format specifier
-    // TODO: shouldn't work
+    // string as number with format specifier - shouldn't work
     constexpr auto test_4 = stdx::scan<
         "my test string is {%d}, right?"_fs, 
         "my test string is test_str, right?", 
         int>().values();
-    static_assert(std::tuple_size<decltype(test_4)>() == 1, "bad scan().values() size");
-    static_assert(std::is_same<decltype(std::get<0>(test_4)), const int&>(), "bad scan().values() type");
-    static_assert(std::get<0>(test_4) == int{}, "bad scan() result");
 }

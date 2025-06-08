@@ -77,10 +77,17 @@ requires IsTypeOneOf<ParsingT, int8_t, int16_t, int32_t, int64_t, const int8_t, 
     && (format_spec == 'd' || format_spec == char{})
 consteval ParsingT parse_value() {
     ParsingT value{};
-    auto [ptr, ec] = std::from_chars(str.data, str.data + str.size(), value);
-    //if (ec == std::errc()) {
-        return value;
-    //}
+    /*
+    Здесь могла быть compile-time обработка ошибки парсинга, например:
+        constexpr bool success = std::from_chars(str.data, str.data + str.size(), value).ec == std::errc{};
+        static_assert(success, "int parsing failed");
+    но любая попытка получить и как-то использовать результат std::from_chars(..) 
+    сразу считается неконстантным выражением, хотя по докам не должно бы.
+
+    есть идеи?
+    */
+    std::from_chars(str.data, str.data + str.size(), value);
+    return value;
 }
 
 template<FixedString str, char format_spec, typename ParsingT>
@@ -88,10 +95,8 @@ requires IsTypeOneOf<ParsingT, uint8_t, uint16_t, uint32_t, uint64_t, const uint
     && (format_spec == 'u' || format_spec == char{})
 consteval ParsingT parse_value() {
     ParsingT value{};
-    auto [ptr, ec] = std::from_chars(str.data, str.data + str.size(), value);
-    //if (ec == std::errc()) {
-        return value;
-    //}
+    std::from_chars(str.data, str.data + str.size(), value);
+    return value;
 }
 
 template<FixedString str, char format_spec, typename ParsingT>
@@ -103,9 +108,7 @@ consteval ParsingT parse_value() {
 
 template<FixedString str, char format_spec, typename ParsingT>
 consteval ParsingT parse_value() {
-    // emit error somehow
-    // parse_error("parsing type mismatch format specifier")
-    return {};
+    static_assert(false, "parsing failed");
 }
 
 // Шаблонная функция, выполняющая преобразования исходных данных в конкретный тип на основе I-го плейсхолдера

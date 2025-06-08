@@ -35,10 +35,10 @@ consteval void testFormatString() {
     // placeholders
     constexpr auto fs_0 = "012 {} 789 {%u} 17 {%s}"_fs;
     static_assert(fs_0.number_placeholders == 3, "bad number_placeholders");
-    static_assert(fs_0.format_specifiers.size() == 3, "bad number_placeholders.size()");
+    static_assert(fs_0.format_specifiers.size() == 3, "bad format_specifiers.size()");
     static_assert(fs_0.format_specifiers[0] == char{} 
-        && fs_0.format_specifiers[1] == char{} 
-        && fs_0.format_specifiers[2] == char{}, "bad number_placeholders");
+        && fs_0.format_specifiers[1] == 'u' 
+        && fs_0.format_specifiers[2] == 's', "bad format_specifiers");
     static_assert(fs_0.placeholder_positions.size() == 3, "bad placeholder_positions.size()");
     static_assert(fs_0.placeholder_positions[0].first == 4
         && fs_0.placeholder_positions[0].second == 5

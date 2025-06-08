@@ -91,13 +91,6 @@ class FormatString {
             // Начало плейсхолдера
             size_t ph_begin = pos;
             ++pos;
-
-            if (str.data[pos] == '%') {
-                ++pos;
-                const char spec = str.data[pos];
-                // TODO: find another way to fill format_specifiers
-                //format_specifiers[current_idx] = spec;
-            }
         
             while (pos < size) {
                 if (str.data[pos] == '}') {
@@ -123,6 +116,19 @@ class FormatString {
         }
     }
     
+    template <size_t PhSize>
+    static consteval std::array<char, PhSize> get_format_specifiers(
+        const PlaceholderPoses<PhSize>& ph_poses) {
+        std::array<char, PhSize> result{};
+
+        for (size_t i=0; i < PhSize; ++i) {
+            if (ph_poses[i].second - ph_poses[i].first > 2) {
+                result[i] = str.data[ph_poses[i].second-1];
+            }
+        }
+            
+        return result;
+    }
 
 public:
     static constexpr const decltype(str.data)& data() {
@@ -133,8 +139,10 @@ public:
     }
     static constexpr size_t number_placeholders = get_valid_number_placeholders();
 
-    static constexpr std::array<char, number_placeholders> format_specifiers{};
-    static constexpr PlaceholderPoses<number_placeholders> placeholder_positions = get_placeholder_positions<number_placeholders>();
+    static constexpr PlaceholderPoses<number_placeholders> placeholder_positions = 
+        get_placeholder_positions<number_placeholders>();
+    static constexpr std::array<char, number_placeholders> format_specifiers = 
+        get_format_specifiers<number_placeholders>(placeholder_positions);
 };
 
 // Пользовательский литерал
