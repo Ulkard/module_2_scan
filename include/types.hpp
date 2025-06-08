@@ -9,43 +9,41 @@
 namespace stdx::details {
 
 // Шаблонный класс, хранящий C-style строку фиксированной длины
-template <size_t ArrSize>
-struct fixed_string {
-    char data[ArrSize];
+template <size_t StrSize>
+struct FixedString {
+    char data[StrSize]{};
 
-    constexpr fixed_string(const char other[ArrSize]) {
-        std::strcpy(data, other);
+    constexpr FixedString(const char (&other)[StrSize]) {
+        std::copy_n(other, StrSize, data);
     }
 
     template <size_t OtherSize>
-    constexpr fixed_string(const char other[OtherSize]) requires (OtherSize <= ArrSize) {
-        std::strcpy(data, other);;
+    constexpr FixedString(const char (&other)[OtherSize]) requires (OtherSize <= StrSize) {
+        std::copy_n(other, OtherSize, data);
     }
 
-    constexpr fixed_string(char* src_begin, char* src_end) requires (src_begin <= src_end) {
+    constexpr FixedString(const char* src_begin, const char* src_end) {
         auto distance = src_end - src_begin;
-        std::copy(src_begin, src_end + 1, &data, &data + distance);
+        std::copy_n(src_begin, distance, data);
     }
 
-    constexpr size_t size() {
-        return ArrSize;
+    static constexpr size_t size() {
+        return StrSize - 1;
     }
 };
 
 // Шаблонный класс, хранящий fixed_string достаточной длины для хранения ошибки парсинга
-struct parse_error : public fixed_string<40> {};
+struct ParseError : public FixedString<50> {};
 
 // Шаблонный класс для хранения результатов парсинга
 template <typename... Ts>
 struct scan_result {
     scan_result() = delete;
 
-    scan_result(std::tuple<Ts...>&& other_tuple)
-        : values_(std::forward(other_tuple)) {};
+    constexpr scan_result(std::tuple<Ts...>&& other_tuple)
+        : values_(std::forward<std::tuple<Ts...>>(other_tuple)) {};
 
-    scan_result(Ts&& ...args)
-        : values_(std::make_tuple(std::forward(args)...)) {};
-    std::tuple<Ts...> values() {
+    constexpr std::tuple<Ts...> values() const {
         return values_;
     }
 

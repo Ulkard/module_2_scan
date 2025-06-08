@@ -1,5 +1,15 @@
-#include "scan.hpp"
+#include "test_types.hpp"
+#include "test_parsing.hpp"
+#include "test_scan.hpp"
+
 
 int main() { 
-    static_assert(stdx::scan<stdx::details::format_string{}, stdx::details::fixed_string{}, int>().i == 42); 
+    testFixedString();
+    testFormatString();
+
+    testParsingSource();
+    testParseValue();
+    testParseInput();
+
+    testScan();
 }
